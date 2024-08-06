@@ -1,4 +1,3 @@
-import rocksdb
 from lupa import LuaRuntime, lua_type
 import json
 import yaml
@@ -39,6 +38,7 @@ class Database:
     def _setup_lua_environment(self):
         # Load LuaRocks packages
         self.lua.execute('''
+            package.path = './luarocks/lib/lua/5.4/'
             json = require("cjson")
             yaml = require("lyaml")
             http = require("socket.http")

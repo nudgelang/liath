@@ -1,4 +1,8 @@
-import rocksdb
+try:
+    import rocksdb
+except:
+    print("Please install the 'rocksdb' package")
+    
 from .base import StorageBase
 
 class RocksDBStorage(StorageBase):
