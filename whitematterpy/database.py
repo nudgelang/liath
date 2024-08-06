@@ -36,16 +36,35 @@ class Database:
         self.load_metadata()
 
     def _setup_lua_environment(self):
-        # Load LuaRocks packages
-        self.lua.execute('''
-            package.path = './luarocks/lib/lua/5.4/'
-            json = require("cjson")
-            yaml = require("lyaml")
-            http = require("socket.http")
-            ltn12 = require("ltn12")
-            htmlparser = require("htmlparser")
-            markdown = require("markdown")
-        ''')
+        lua = LuaRuntime(unpack_returned_tuples=True)
+        
+        # Set up the Lua package path to include LuaRocks packages
+        setup_script = """
+        local home = os.getenv("HOME")
+        local lua_version = _VERSION:match("%d+%.%d+")
+        package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/" .. lua_version .. "/?.lua"
+        package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/" .. lua_version .. "/?/init.lua"
+        package.cpath = package.cpath .. ";" .. home .. "/.luarocks/lib/lua/" .. lua_version .. "/?.so"
+        
+        -- Add the namespace-specific LuaRocks path
+        local function add_namespace_path(namespace)
+            local ns_path = "NAMESPACE_PATH/" .. namespace
+            package.path = package.path .. ";" .. ns_path .. "/share/lua/" .. lua_version .. "/?.lua"
+            package.path = package.path .. ";" .. ns_path .. "/share/lua/" .. lua_version .. "/?/init.lua"
+            package.cpath = package.cpath .. ";" .. ns_path .. "/lib/lua/" .. lua_version .. "/?.so"
+        end
+        
+        -- Expose the add_namespace_path function to Python
+        return add_namespace_path
+        """
+        
+        # Replace NAMESPACE_PATH with the actual path to your namespaces
+        setup_script = setup_script.replace("NAMESPACE_PATH", os.path.join(self.data_dir, "namespaces"))
+        
+        # Execute the setup script and get the add_namespace_path function
+        self.add_namespace_path = lua.execute(setup_script)
+        
+        return lua
 
     def load_plugins(self):
         plugins = {}
@@ -86,6 +105,8 @@ class Database:
                 'packages': set(packages or []),
             }
             self.save_metadata()
+
+            self.add_namespace_path(name)
        
     def execute_query(self, namespace, query, return_format='dict'):
         if namespace not in self.namespaces:

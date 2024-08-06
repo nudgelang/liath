@@ -134,6 +134,12 @@ class DBPlugin(PluginBase):
         except Exception as e:
             return json.dumps({"status": "error", "message": str(e)})
 
+    def require_package(self, package_name):
+        try:
+            return self.lua.require(package_name)
+        except Exception as e:
+            return json.dumps({"status": "error", "message": f"Failed to load package {package_name}: {str(e)}"})
+
     @property
     def name(self):
         return "db"
