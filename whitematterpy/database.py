@@ -1,6 +1,7 @@
 import rocksdb
-from lupa import LuaRuntime
+from lupa import LuaRuntime, lua_type
 import json
+import yaml
 import os
 import threading
 import importlib.util
@@ -15,8 +16,20 @@ class Database:
         self.metadata_file = os.path.join(data_dir, 'metadata.json')
         self.auth_db = rocksdb.DB(os.path.join(data_dir, "auth.db"), rocksdb.Options(create_if_missing=True))
         self.lua = LuaRuntime(unpack_returned_tuples=True)
+        self._setup_lua_environment()
         self.plugins = self.load_plugins()
         self.load_metadata()
+
+    def _setup_lua_environment(self):
+        # Load LuaRocks packages
+        self.lua.execute('''
+            json = require("cjson")
+            yaml = require("lyaml")
+            http = require("socket.http")
+            ltn12 = require("ltn12")
+            htmlparser = require("htmlparser")
+            markdown = require("markdown")
+        ''')
 
     def load_plugins(self):
         plugins = {}
@@ -74,7 +87,7 @@ class Database:
             }
             self.save_metadata()
 
-    def execute_query(self, namespace, query):
+    def execute_query(self, namespace, query, return_format='dict'):
         if namespace not in self.namespaces:
             raise ValueError(f"Namespace '{namespace}' does not exist")
 
@@ -92,7 +105,48 @@ class Database:
 
             lua_function = self.lua.eval(f"function({', '.join(lua_env.keys())}) {query} end")
             result = lua_function(**lua_env)
-            return result
+            
+            return self._format_result(result, return_format)
+
+    def _format_result(self, result, format):
+        if format == 'dict':
+            return self._lua_to_python(result)
+        elif format == 'json':
+            return json.dumps(self._lua_to_python(result))
+        elif format == 'yaml':
+            return yaml.dump(self._lua_to_python(result))
+        elif format == 'markdown':
+            return self._dict_to_markdown(self._lua_to_python(result))
+        else:
+            raise ValueError(f"Unsupported return format: {format}")
+
+    def _lua_to_python(self, obj):
+        lua_type_name = lua_type(obj)
+        if lua_type_name == 'table':
+            if len(obj) > 0:
+                return [self._lua_to_python(item) for item in obj.values()]
+            else:
+                return {str(k): self._lua_to_python(v) for k, v in obj.items()}
+        elif lua_type_name == 'unicode':
+            return str(obj)
+        elif lua_type_name in ['int', 'long', 'float']:
+            return obj
+        elif lua_type_name == 'NoneType':
+            return None
+        else:
+            return str(obj)
+
+    def _dict_to_markdown(self, d, level=0):
+        markdown = ""
+        for key, value in d.items():
+            markdown += "  " * level + f"- **{key}**: "
+            if isinstance(value, dict):
+                markdown += "\n" + self._dict_to_markdown(value, level + 1)
+            elif isinstance(value, list):
+                markdown += "\n" + "  " * (level + 1) + "- " + "\n  ".join(str(item) for item in value)
+            else:
+                markdown += str(value) + "\n"
+        return markdown
 
     def authenticate_user(self, username, password):
         stored_password = self.auth_db.get(username.encode())
@@ -131,3 +185,4 @@ class Database:
 if __name__ == "__main__":
     db = Database()
     print("Database initialized with namespaces:", db.list_namespaces())
+    print("Loaded plugins:", list(db.plugins.keys()))

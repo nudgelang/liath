@@ -1,9 +1,24 @@
 from flask import Flask, request, jsonify
 from database import Database
 import threading
+from concurrent.futures import ThreadPoolExecutor
+import json
 
 app = Flask(__name__)
 db = Database()
+executor = ThreadPoolExecutor(max_workers=20)  # Adjust the number of workers as needed
+
+def execute_query(namespace, query):
+    try:
+        result = db.execute_query(namespace, query)
+        if isinstance(result, (dict, list)):
+            return json.dumps(result)
+        elif isinstance(result, str):
+            return result
+        else:
+            return json.dumps({"result": str(result)})
+    except Exception as e:
+        return json.dumps({"status": "error", "message": str(e)})
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -25,11 +40,9 @@ def create_user():
 @app.route('/query', methods=['POST'])
 def query():
     data = request.json
-    try:
-        result = db.execute_query(data['namespace'], data['query'])
-        return jsonify({"status": "success", "result": result})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+    future = executor.submit(execute_query, data['namespace'], data['query'])
+    result = future.result()
+    return result, 200, {'Content-Type': 'application/json'}
 
 @app.route('/create_namespace', methods=['POST'])
 def create_namespace():
@@ -41,17 +54,8 @@ def create_namespace():
 def list_namespaces():
     return jsonify({"status": "success", "namespaces": db.list_namespaces()})
 
-@app.route('/install_package', methods=['POST'])
-def install_package():
-    data = request.json
-    success = db.install_package(data['namespace'], data['package'])
-    if success:
-        return jsonify({"status": "success", "message": f"Package {data['package']} installed successfully in namespace {data['namespace']}"})
-    else:
-        return jsonify({"status": "error", "message": f"Failed to install package {data['package']}"}), 400
-
 def run_server():
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
 
 if __name__ == '__main__':
     server_thread = threading.Thread(target=run_server)

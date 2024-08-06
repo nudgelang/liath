@@ -1,15 +1,18 @@
 import cmd
 from database import Database
+import json
+import yaml
 
 class DatabaseCLI(cmd.Cmd):
-    intro = "Welcome to the Advanced RocksDB-Lua Database CLI. Type help or ? to list commands.\n"
-    prompt = "(rocksdb-lua) "
+    intro = "Welcome to the WhiteMatter Database CLI. Type help or ? to list commands.\n"
+    prompt = "(whitematter) "
 
     def __init__(self):
         super().__init__()
         self.db = Database()
         self.current_namespace = 'default'
         self.username = None
+        self.return_format = 'dict'
 
     def do_login(self, arg):
         """Login to the database: login username password"""
@@ -46,35 +49,36 @@ class DatabaseCLI(cmd.Cmd):
         """List all namespaces"""
         print("Namespaces:", ', '.join(self.db.list_namespaces()))
 
+    def do_set_format(self, arg):
+        """Set the return format: set_format [dict|json|yaml|markdown]"""
+        if arg in ['dict', 'json', 'yaml', 'markdown']:
+            self.return_format = arg
+            print(f"Return format set to: {arg}")
+        else:
+            print("Invalid format. Choose from: dict, json, yaml, markdown")
+
     def do_query(self, arg):
         """Execute a Lua query in the current namespace: query lua_code"""
         if not self.username:
             print("Please login first")
             return
         try:
-            result = self.db.execute_query(self.current_namespace, arg)
-            print("Result:", result)
+            result = self.db.execute_query(self.current_namespace, arg, self.return_format)
+            if self.return_format == 'dict':
+                print(result)
+            elif self.return_format == 'json':
+                print(json.dumps(json.loads(result), indent=2))
+            elif self.return_format == 'yaml':
+                print(result)
+            elif self.return_format == 'markdown':
+                print(result)
         except Exception as e:
             print("Error:", str(e))
-
-    def do_install_package(self, arg):
-        """Install a LuaRocks package in the current namespace: install_package package_name"""
-        if not self.username:
-            print("Please login first")
-            return
-        success = self.db.install_package(self.current_namespace, arg)
-        if success:
-            print(f"Package '{arg}' installed successfully in namespace '{self.current_namespace}'")
-        else:
-            print(f"Failed to install package '{arg}'")
 
     def do_exit(self, arg):
         """Exit the CLI"""
         print("Goodbye!")
         return True
 
-def main():
-    DatabaseCLI().cmdloop()
-
 if __name__ == '__main__':
-    main()
+    DatabaseCLI().cmdloop()
