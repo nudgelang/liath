@@ -103,9 +103,39 @@ python server.py --storage leveldb --host 0.0.0.0 --port 5000
    query return db:get("key")
    ```
 
-### Advanced Features
+## Using LuaRocks Packages in Queries
 
-For detailed information on using advanced features like vector search, LLM integration, and file operations, please refer to the specific sections in this README or check the documentation.
+WhiteMatter now supports the use of LuaRocks packages in your Lua queries. Here's how you can use them:
+
+1. Install a LuaRocks package for a specific namespace:
+   ```
+   luarocks install --tree=./data/namespaces/your_namespace_name package_name
+   ```
+
+2. In your Lua query, use the `db:require()` function to load the package:
+   ```lua
+   local json = db:require("cjson")
+   local encoded = json.encode({key = "value"})
+   return encoded
+   ```
+
+3. You can now use the functions provided by the package in your query.
+
+Note: The `db:require()` function will first look for packages in the namespace-specific directory, and then in the global LuaRocks directory.
+
+### Example: Using the `luasocket` package
+
+1. Install `luasocket` for a namespace:
+   ```
+   luarocks install --tree=./data/namespaces/my_namespace luasocket
+   ```
+
+2. Use it in a query:
+   ```lua
+   local http = db:require("socket.http")
+   local body, code = http.request("http://example.com")
+   return {body = body, status_code = code}
+   ```
 
 ## Pluggable Storage System
 
