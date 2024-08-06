@@ -2,14 +2,15 @@ import cmd
 from database import Database
 import json
 import yaml
+import argparse
 
 class DatabaseCLI(cmd.Cmd):
     intro = "Welcome to the WhiteMatter Database CLI. Type help or ? to list commands.\n"
     prompt = "(whitematter) "
 
-    def __init__(self):
+    def __init__(self, storage_type='auto'):
         super().__init__()
-        self.db = Database()
+        self.db = Database(storage_type=storage_type)
         self.current_namespace = 'default'
         self.username = None
         self.return_format = 'dict'
@@ -81,4 +82,9 @@ class DatabaseCLI(cmd.Cmd):
         return True
 
 if __name__ == '__main__':
-    DatabaseCLI().cmdloop()
+    parser = argparse.ArgumentParser(description="WhiteMatter Database CLI")
+    parser.add_argument('--storage', choices=['auto', 'rocksdb', 'leveldb'], default='auto',
+                        help="Specify the storage backend to use")
+    args = parser.parse_args()
+
+    DatabaseCLI(storage_type=args.storage).cmdloop()

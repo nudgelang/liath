@@ -1,10 +1,10 @@
 # WhiteMatter
 
-WhiteMatter is an advanced, extensible database system built on top of RocksDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
+WhiteMatter is an advanced, extensible database system built on top of RocksDB or LevelDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
 
 ## Features
 
-- **RocksDB Backend**: Efficient and reliable storage engine
+- **Pluggable Storage Backend**: Choose between RocksDB and LevelDB
 - **Lua Query Language**: Flexible and powerful querying capabilities
 - **Plugin Architecture**: Easily extensible with custom plugins
 - **Vector Database**: Built-in vector search capabilities
@@ -12,9 +12,13 @@ WhiteMatter is an advanced, extensible database system built on top of RocksDB w
 - **Embedding Generation**: Create embeddings for text data
 - **File Operations**: Built-in file storage and retrieval
 - **Namespaces**: Isolate data and operations in separate namespaces
-- **Transaction Support**: ACID compliant transactions
+- **Transaction Support**: ACID compliant transactions (RocksDB only)
 - **User Authentication**: Basic user management and authentication
 - **CLI and Server Interfaces**: Interact via command line or HTTP API
+- **Backup and Restore**: Create and manage backups of your data
+- **Query Caching**: Improve performance for frequently executed queries
+- **Monitoring and Logging**: Track system performance and log important events
+- **Connection Pooling**: Efficiently handle high concurrency in the server
 
 ## Installation
 
@@ -24,16 +28,26 @@ WhiteMatter is an advanced, extensible database system built on top of RocksDB w
    cd whitematter
    ```
 
-2. Install the required dependencies:
+2. Install the required Python dependencies:
    ```
-   pip install rocksdb lupa flask llama-cpp-python fastembed usearch
+   pip install flask pyyaml
    ```
 
-3. Install LuaRocks:
+3. Install the storage backend of your choice:
+
+   For RocksDB:
    ```
-   sudo apt-get install luarocks  # For Ubuntu/Debian
-   # or
-   brew install luarocks  # For macOS
+   pip install rocksdb
+   ```
+
+   For LevelDB:
+   ```
+   pip install plyvel
+   ```
+
+   For both (recommended):
+   ```
+   pip install rocksdb plyvel
    ```
 
 4. Set up the directory structure:
@@ -43,87 +57,74 @@ WhiteMatter is an advanced, extensible database system built on top of RocksDB w
    mkdir plugins
    ```
 
-5. Download a suitable GGUF model for llama_cpp and update the `model_path` in the `LLMPlugin` class.
-
 ## Usage
 
 ### CLI Interface
 
-1. Start the CLI:
-   ```
-   python cli.py
-   ```
+Start the CLI with your preferred storage backend:
 
-2. Create a user and log in:
+```
+python cli.py --storage auto  # Tries RocksDB first, falls back to LevelDB
+# or
+python cli.py --storage rocksdb  # Explicitly use RocksDB
+# or
+python cli.py --storage leveldb  # Explicitly use LevelDB
+```
+
+### Server Interface
+
+Start the server with your preferred storage backend:
+
+```
+python server.py --storage auto --host 0.0.0.0 --port 5000
+# or
+python server.py --storage rocksdb --host 0.0.0.0 --port 5000
+# or
+python server.py --storage leveldb --host 0.0.0.0 --port 5000
+```
+
+### Basic Operations
+
+1. Create a user and log in:
    ```
    create_user username password
    login username password
    ```
 
-3. Create a namespace (or use the default one):
+2. Create a namespace:
    ```
    create_namespace my_namespace
    use my_namespace
    ```
 
-4. Execute Lua queries:
+3. Execute Lua queries:
    ```
-   query db:put("key1", "value1")
-   query local value = db:get("key1"); print(value)
-   ```
-
-### Server Interface
-
-1. Start the server:
-   ```
-   python server.py
+   query return db:put("key", "value")
+   query return db:get("key")
    ```
 
-2. Interact with the server using HTTP requests:
-   ```
-   curl -X POST http://localhost:5000/login -H "Content-Type: application/json" -d '{"username":"your_username", "password":"your_password"}'
-   
-   curl -X POST http://localhost:5000/query -H "Content-Type: application/json" -d '{"namespace":"my_namespace", "query":"db:put(\"key1\", \"value1\"); return db:get(\"key1\")"}'
-   ```
+### Advanced Features
 
-## Plugin System
+For detailed information on using advanced features like vector search, LLM integration, and file operations, please refer to the specific sections in this README or check the documentation.
 
-WhiteMatter uses a plugin architecture for extensibility. Plugins are automatically loaded from the `plugins` directory. To create a new plugin:
+## Pluggable Storage System
 
-1. Create a new Python file in the `plugins` directory (e.g., `my_plugin.py`).
+WhiteMatter supports both RocksDB and LevelDB as storage backends. The choice of backend can affect performance and available features:
+
+- **RocksDB**: Generally offers better performance for larger datasets and supports more advanced features like column families and transactions.
+- **LevelDB**: Simpler and may be easier to deploy in some environments. Does not support column families or transactions.
+
+Choose the storage engine that best fits your use case and deployment environment.
+
+## Extending WhiteMatter
+
+WhiteMatter's plugin architecture allows for easy extension of functionality. To create a new plugin:
+
+1. Create a new Python file in the `plugins` directory.
 2. Define a class that inherits from `PluginBase`.
 3. Implement the required methods: `initialize`, `get_lua_interface`, and `name`.
 
-Example:
-
-```python
-from plugin_base import PluginBase
-
-class MyPlugin(PluginBase):
-    def initialize(self, context):
-        # Initialize your plugin
-        pass
-
-    def get_lua_interface(self):
-        return {
-            'my_function': self.my_function
-        }
-
-    def my_function(self, arg):
-        # Implement your function
-        return f"Hello, {arg}!"
-
-    @property
-    def name(self):
-        return "my_plugin"
-```
-
-Your plugin will be automatically loaded and its functions will be available in Lua queries:
-
-```lua
-local result = my_plugin:my_function("World")
-print(result)  -- Outputs: Hello, World!
-```
+For more detailed information on creating plugins, refer to the developer documentation.
 
 ## Contributing
 

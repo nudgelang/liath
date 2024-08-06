@@ -3,12 +3,18 @@ from database import Database
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import json
+import argparse
 
 app = Flask(__name__)
-db = Database()
 executor = ThreadPoolExecutor(max_workers=20)  # Adjust the number of workers as needed
 
+def create_app(storage_type='auto'):
+    db = Database(storage_type=storage_type)
+    app.config['db'] = db
+    return app
+
 def execute_query(namespace, query):
+    db = app.config['db']
     try:
         result = db.execute_query(namespace, query)
         if isinstance(result, (dict, list)):
@@ -23,6 +29,7 @@ def execute_query(namespace, query):
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
+    db = app.config['db']
     if db.authenticate_user(data['username'], data['password']):
         return jsonify({"status": "success", "message": "Logged in successfully"})
     else:
@@ -31,6 +38,7 @@ def login():
 @app.route('/create_user', methods=['POST'])
 def create_user():
     data = request.json
+    db = app.config['db']
     try:
         db.create_user(data['username'], data['password'])
         return jsonify({"status": "success", "message": "User created successfully"})
@@ -47,18 +55,28 @@ def query():
 @app.route('/create_namespace', methods=['POST'])
 def create_namespace():
     data = request.json
+    db = app.config['db']
     db.create_namespace(data['namespace'])
     return jsonify({"status": "success", "message": f"Namespace {data['namespace']} created"})
 
 @app.route('/list_namespaces', methods=['GET'])
 def list_namespaces():
+    db = app.config['db']
     return jsonify({"status": "success", "namespaces": db.list_namespaces()})
 
-def run_server():
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+def run_server(host='0.0.0.0', port=5000):
+    app.run(host=host, port=port, threaded=True)
 
 if __name__ == '__main__':
-    server_thread = threading.Thread(target=run_server)
+    parser = argparse.ArgumentParser(description="WhiteMatter Database Server")
+    parser.add_argument('--storage', choices=['auto', 'rocksdb', 'leveldb'], default='auto',
+                        help="Specify the storage backend to use")
+    parser.add_argument('--host', default='0.0.0.0', help="Specify the host to run the server on")
+    parser.add_argument('--port', type=int, default=5000, help="Specify the port to run the server on")
+    args = parser.parse_args()
+
+    app = create_app(storage_type=args.storage)
+    server_thread = threading.Thread(target=run_server, args=(args.host, args.port))
     server_thread.start()
-    print("Server is running on http://0.0.0.0:5000")
+    print(f"Server is running on http://{args.host}:{args.port}")
     server_thread.join()

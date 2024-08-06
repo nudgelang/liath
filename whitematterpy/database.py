@@ -7,14 +7,30 @@ import threading
 import importlib.util
 import inspect
 from plugin_base import PluginBase
+from storage.rocksdb_storage import RocksDBStorage
+from storage.leveldb_storage import LevelDBStorage
 
 class Database:
-    def __init__(self, data_dir='./data', plugins_dir='./plugins'):
+    def __init__(self, data_dir='./data', plugins_dir='./plugins', storage_type='auto'):
         self.data_dir = data_dir
         self.plugins_dir = plugins_dir
         self.namespaces = {}
         self.metadata_file = os.path.join(data_dir, 'metadata.json')
-        self.auth_db = rocksdb.DB(os.path.join(data_dir, "auth.db"), rocksdb.Options(create_if_missing=True))
+        
+        if storage_type == 'auto':
+            try:
+                import rocksdb
+                self.StorageClass = RocksDBStorage
+            except ImportError:
+                self.StorageClass = LevelDBStorage
+        elif storage_type == 'rocksdb':
+            self.StorageClass = RocksDBStorage
+        elif storage_type == 'leveldb':
+            self.StorageClass = LevelDBStorage
+        else:
+            raise ValueError("Invalid storage_type. Choose 'auto', 'rocksdb', or 'leveldb'")
+
+        self.auth_db = self.StorageClass(os.path.join(data_dir, "auth.db"))
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self._setup_lua_environment()
         self.plugins = self.load_plugins()
@@ -64,29 +80,13 @@ class Database:
     def create_namespace(self, name, packages=None):
         if name not in self.namespaces:
             db_path = os.path.join(self.data_dir, f"{name}.db")
-            opts = rocksdb.Options()
-            opts.create_if_missing = True
-            opts.max_open_files = 300000
-            opts.write_buffer_size = 67108864
-            opts.max_write_buffer_number = 3
-            opts.target_file_size_base = 67108864
-
-            opts.table_factory = rocksdb.BlockBasedTableFactory(
-                filter_policy=rocksdb.BloomFilterPolicy(10),
-                block_cache=rocksdb.LRUCache(2 * (1024 ** 3)),
-                block_cache_compressed=rocksdb.LRUCache(500 * (1024 ** 2)))
-
-            opts.compression = rocksdb.CompressionType.lz4_compression
-            opts.compaction_style = rocksdb.CompactionStyle.level
-
             self.namespaces[name] = {
-                'db': rocksdb.DB(db_path, opts),
+                'db': self.StorageClass(db_path),
                 'lock': threading.Lock(),
                 'packages': set(packages or []),
-                'txn': None
             }
             self.save_metadata()
-
+       
     def execute_query(self, namespace, query, return_format='dict'):
         if namespace not in self.namespaces:
             raise ValueError(f"Namespace '{namespace}' does not exist")
@@ -181,6 +181,11 @@ class Database:
                 return True
             except subprocess.CalledProcessError:
                 return False
+            
+    def close(self):
+        for namespace in self.namespaces.values():
+            namespace['db'].close()
+        self.auth_db.close()
 
 if __name__ == "__main__":
     db = Database()
