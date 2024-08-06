@@ -9,6 +9,10 @@ readme = "README.md"
 python = "^3.11"
 
 
+[tool.poetry.scripts]
+server = 'whitematterpy.server:run_server'
+cli = 'whitematterpy.cli:main'
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

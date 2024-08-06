@@ -73,5 +73,8 @@ class DatabaseCLI(cmd.Cmd):
         print("Goodbye!")
         return True
 
-if __name__ == '__main__':
+def main():
     DatabaseCLI().cmdloop()
+
+if __name__ == '__main__':
+    main()
