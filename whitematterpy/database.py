@@ -116,7 +116,8 @@ class Database:
             context = {
                 'namespace': namespace,
                 'db': self.namespaces[namespace]['db'],
-                'packages': self.namespaces[namespace]['packages']
+                'packages': self.namespaces[namespace]['packages'],
+                'data_dir': self.data_dir
             }
             
             # Initialize plugins and add their interfaces to the Lua environment
@@ -130,8 +131,17 @@ class Database:
                 self.lua.globals()[name] = func
 
             # Execute the Lua query
-            result = self.lua.eval(query)
-                        
+
+            # Wrap the query in a function and return its result
+            wrapped_query = f"""
+            function execute_query()
+                {query}
+            end
+            return execute_query()
+            """
+
+            # Execute the Lua query
+            result = self.lua.execute(wrapped_query)                        
             return self._format_result(result, return_format)
 
     def _format_result(self, result, format):

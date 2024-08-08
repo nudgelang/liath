@@ -58,11 +58,11 @@ class DatabaseCLI(cmd.Cmd):
         if arg:
             self._execute_query(arg)
         else:
-            print("Enter your multiline Lua query. Type 'END' on a new line to finish:")
+            print("Enter your multiline Lua query. Type 'EOP' on a new line to finish:")
             lines = []
             while True:
                 line = input()
-                if line.strip().upper() == 'END':
+                if line.strip().upper() == 'EOP':
                     break
                 lines.append(line)
             query = '\n'.join(lines)

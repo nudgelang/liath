@@ -29,13 +29,18 @@ class EmbedPlugin(PluginBase):
             'get_current_config': self.lua_callable(self.get_current_config)
         }
 
-    def embed(self, input_data):
+    def embed(self, text=None, image_path=None):
         try:
             if self.current_type == "image":
-                # Assuming input_data is a path to an image file
-                return next(self.embedding_model.embed([input_data]))
+                if image_path is None:
+                    return json.dumps({"error": "Image path is required for image embeddings"})
+                embeddings = list(self.embedding_model.embed([image_path]))
             else:
-                return next(self.embedding_model.embed([input_data]))
+                if text is None:
+                    return json.dumps({"error": "Text is required for text embeddings"})
+                embeddings = list(self.embedding_model.embed([text]))
+            
+            return json.dumps({"embedding": embeddings[0].tolist()})
         except Exception as e:
             return json.dumps({"error": str(e)})
 
