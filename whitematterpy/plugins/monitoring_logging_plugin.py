@@ -25,9 +25,9 @@ class MonitoringLoggingPlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'log': self.log,
-            'get_stats': self.get_stats,
-            'get_log_tail': self.get_log_tail
+            'monitor_log': self.lua_callable(self.log),
+            'monitor_get_stats': self.lua_callable(self.get_stats),
+            'monitor_get_log_tail': self.lua_callable(self.get_log_tail)
         }
 
     def log(self, level, message):

@@ -24,15 +24,6 @@ class DatabaseCLI(cmd.Cmd):
         else:
             print("Invalid username or password")
 
-    def do_create_user(self, arg):
-        """Create a new user: create_user username password"""
-        username, password = arg.split()
-        try:
-            self.db.create_user(username, password)
-            print(f"User {username} created successfully")
-        except ValueError as e:
-            print(str(e))
-
     def do_use(self, arg):
         """Switch to a different namespace: use namespace_name"""
         if arg in self.db.list_namespaces():
@@ -51,28 +42,43 @@ class DatabaseCLI(cmd.Cmd):
         print("Namespaces:", ', '.join(self.db.list_namespaces()))
 
     def do_set_format(self, arg):
-        """Set the return format: set_format [dict|json|yaml|markdown]"""
-        if arg in ['dict', 'json', 'yaml', 'markdown']:
+        """Set the return format: set_format [dict|json|yaml|lua]"""
+        if arg in ['dict', 'json', 'yaml', 'lua']:
             self.return_format = arg
             print(f"Return format set to: {arg}")
         else:
-            print("Invalid format. Choose from: dict, json, yaml, markdown")
+            print("Invalid format. Choose from: dict, json, yaml, lua")
 
     def do_query(self, arg):
-        """Execute a Lua query in the current namespace: query lua_code"""
+        """Execute a Lua query (single line or start a multiline query)"""
         if not self.username:
             print("Please login first")
             return
+        
+        if arg:
+            self._execute_query(arg)
+        else:
+            print("Enter your multiline Lua query. Type 'END' on a new line to finish:")
+            lines = []
+            while True:
+                line = input()
+                if line.strip().upper() == 'END':
+                    break
+                lines.append(line)
+            query = '\n'.join(lines)
+            self._execute_query(query)
+
+    def _execute_query(self, query):
         try:
-            result = self.db.execute_query(self.current_namespace, arg, self.return_format)
+            result = self.db.execute_query(self.current_namespace, query)
             if self.return_format == 'dict':
                 print(result)
             elif self.return_format == 'json':
-                print(json.dumps(json.loads(result), indent=2))
+                print(json.dumps(result, indent=2))
             elif self.return_format == 'yaml':
-                print(result)
-            elif self.return_format == 'markdown':
-                print(result)
+                print(yaml.dump(result))
+            elif self.return_format == 'lua':
+                print(result)  # Assuming result is already in Lua format
         except Exception as e:
             print("Error:", str(e))
 

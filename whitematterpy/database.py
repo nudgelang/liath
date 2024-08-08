@@ -119,14 +119,19 @@ class Database:
                 'packages': self.namespaces[namespace]['packages']
             }
             
+            # Initialize plugins and add their interfaces to the Lua environment
             lua_env = {}
-            for plugin_name, plugin in self.plugins.items():
+            for plugin in self.plugins.values():
                 plugin.initialize(context)
-                lua_env[plugin_name] = plugin.get_lua_interface()
+                lua_env.update(plugin.get_lua_interface())
 
-            lua_function = self.lua.eval(f"function({', '.join(lua_env.keys())}) {query} end")
-            result = lua_function(**lua_env)
-            
+            # Add the plugin interfaces to the Lua environment
+            for name, func in lua_env.items():
+                self.lua.globals()[name] = func
+
+            # Execute the Lua query
+            result = self.lua.eval(query)
+                        
             return self._format_result(result, return_format)
 
     def _format_result(self, result, format):

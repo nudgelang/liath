@@ -7,8 +7,7 @@ import json
 class LLMPlugin(PluginBase):
     def initialize(self, context):
         self.models = {
-            "llama2-7b": "/path/to/llama2-7b.gguf",
-            "mistral-7b": "/path/to/mistral-7b.gguf",
+            "llama2-7b": "llama-2-7b.Q4_0.gguf",
             # Add more models as needed
         }
         self.current_model = "llama2-7b"
@@ -20,11 +19,11 @@ class LLMPlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'complete': self.complete,
-            'chat': self.chat,
-            'set_model': self.set_model,
-            'set_mode': self.set_mode,
-            'list_models': self.list_models
+            'llm_complete': self.lua_callable(self.complete),
+            'llm_chat': self.lua_callable(self.chat),
+            'llm_set_model': self.lua_callable(self.set_model),
+            'llm_set_mode': self.lua_callable(self.set_mode),
+            'llm_list_models': self.lua_callable(self.list_models)
         }
 
     def set_model(self, model_name):

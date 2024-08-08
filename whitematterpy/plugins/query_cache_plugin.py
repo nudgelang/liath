@@ -8,7 +8,7 @@ class QueryCachePlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'cached_query': self.cached_query
+            'cached_query': self.lua_callable(self.cached_query)
         }
 
     @lru_cache(maxsize=100)

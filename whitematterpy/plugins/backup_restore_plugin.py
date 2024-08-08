@@ -12,9 +12,9 @@ class BackupRestorePlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'create_backup': self.create_backup,
-            'list_backups': self.list_backups,
-            'restore_backup': self.restore_backup
+            'create_backup': self.lua_callable(self.create_backup),
+            'list_backups': self.lua_callable(self.list_backups),
+            'restore_backup': self.lua_callable(self.restore_backup)
         }
 
     def create_backup(self):

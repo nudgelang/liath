@@ -22,11 +22,11 @@ class EmbedPlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'embed': self.embed,
-            'list_supported_models': self.list_supported_models,
-            'set_model': self.set_model,
-            'set_embedding_type': self.set_embedding_type,
-            'get_current_config': self.get_current_config
+            'embed': self.lua_callable(self.embed),
+            'list_supported_models': self.lua_callable(self.list_supported_models),
+            'set_model': self.lua_callable(self.set_model),
+            'set_embedding_type': self.lua_callable(self.set_embedding_type),
+            'get_current_config': self.lua_callable(self.get_current_config)
         }
 
     def embed(self, input_data):

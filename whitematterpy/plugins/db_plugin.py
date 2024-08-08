@@ -8,22 +8,22 @@ class DBPlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'get': self.get,
-            'put': self.put,
-            'delete': self.delete,
-            'begin_transaction': self.begin_transaction,
-            'commit_transaction': self.commit_transaction,
-            'rollback_transaction': self.rollback_transaction,
-            'create_column_family': self.create_column_family,
-            'drop_column_family': self.drop_column_family,
-            'list_column_families': self.list_column_families,
-            'get_cf': self.get_cf,
-            'put_cf': self.put_cf,
-            'delete_cf': self.delete_cf,
-            'iterator': self.create_iterator,
-            'write_batch': self.write_batch,
-            'compact_range': self.compact_range,
-            'flush': self.flush,
+            'db_get': self.lua_callable(self.get),
+            'db_put': self.lua_callable(self.put),
+            'db_delete': self.lua_callable(self.delete),
+            'db_begin_transaction': self.lua_callable(self.begin_transaction),
+            'db_commit_transaction': self.lua_callable(self.commit_transaction),
+            'db_rollback_transaction': self.lua_callable(self.rollback_transaction),
+            'db_create_column_family': self.lua_callable(self.create_column_family),
+            'db_drop_column_family': self.lua_callable(self.drop_column_family),
+            'db_list_column_families': self.lua_callable(self.list_column_families),
+            'db_get_cf': self.lua_callable(self.get_cf),
+            'db_put_cf': self.lua_callable(self.put_cf),
+            'db_delete_cf': self.lua_callable(self.delete_cf),
+            'db_iterator': self.lua_callable(self.create_iterator),
+            'db_write_batch': self.lua_callable(self.write_batch),
+            'db_compact_range': self.lua_callable(self.compact_range),
+            'db_flush': self.lua_callable(self.flush),
         }
 
     def _encode(self, value):

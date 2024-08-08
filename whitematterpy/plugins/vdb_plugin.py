@@ -11,11 +11,11 @@ class VDBPlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'add': self.add,
-            'search': self.search,
-            'remove': self.remove,
-            'count': self.count,
-            'clear': self.clear
+            'vdb_add': self.lua_callable(self.add),
+            'vdb_search': self.lua_callable(self.search),
+            'vdb_remove': self.lua_callable(self.remove),
+            'vdb_count': self.lua_callable(self.count),
+            'vdb_clear': self.lua_callable(self.clear)
         }
 
     def _load_or_create_index(self):

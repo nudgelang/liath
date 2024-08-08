@@ -9,9 +9,9 @@ class FilePlugin(PluginBase):
 
     def get_lua_interface(self):
         return {
-            'read': self.read,
-            'write': self.write,
-            'delete': self.delete
+            'file_read': self.lua_callable(self.read),
+            'file_write': self.lua_callable(self.write),
+            'file_delete': self.lua_callable(self.delete)
         }
 
     def read(self, filename):
