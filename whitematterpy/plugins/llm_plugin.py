@@ -56,8 +56,8 @@ class LLMPlugin(PluginBase):
             result = self.llm(prompt, max_tokens=max_tokens)
             return json.dumps({"text": result["choices"][0]["text"]})
         else:
-            response = openai.Completion.create(
-                engine=self.current_model,
+            response = openai.completions.create(
+                model=self.current_model,
                 prompt=prompt,
                 max_tokens=max_tokens
             )
@@ -68,7 +68,7 @@ class LLMPlugin(PluginBase):
             result = self.llm.create_chat_completion(messages)
             return json.dumps(result)
         else:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model=self.current_model,
                 messages=messages
             )

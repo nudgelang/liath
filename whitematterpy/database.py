@@ -126,12 +126,35 @@ class Database:
                 plugin.initialize(context)
                 lua_env.update(plugin.get_lua_interface())
 
+            import sys
+            orig_dlflags = sys.getdlopenflags()
+            sys.setdlopenflags(258)
+            
+            import lupa
+            sys.setdlopenflags(orig_dlflags)
+
+            lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+
+            # Set up the Lua package path for this namespace
+            setup_script = f"""
+                local home = os.getenv("HOME")
+                local lua_version = _VERSION:match("%d+%.%d+")
+                package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/" .. lua_version .. "/?.lua"
+                package.path = package.path .. ";" .. home .. "/.luarocks/share/lua/" .. lua_version .. "/?/init.lua"
+                package.cpath = package.cpath .. ";" .. home .. "/.luarocks/lib/lua/" .. lua_version .. "/?.so"
+                
+                local ns_path = "{os.path.join(self.data_dir, 'namespaces', namespace)}"
+                package.path = package.path .. ";" .. ns_path .. "/share/lua/" .. lua_version .. "/?.lua"
+                package.path = package.path .. ";" .. ns_path .. "/share/lua/" .. lua_version .. "/?/init.lua"
+                package.cpath = package.cpath .. ";" .. ns_path .. "/lib/lua/" .. lua_version .. "/?.so"
+            """
+            
+            lua.execute(setup_script)
             # Add the plugin interfaces to the Lua environment
             for name, func in lua_env.items():
-                self.lua.globals()[name] = func
+                lua.globals()[name] = func
 
             # Execute the Lua query
-
             # Wrap the query in a function and return its result
             wrapped_query = f"""
             function execute_query()
@@ -141,7 +164,8 @@ class Database:
             """
 
             # Execute the Lua query
-            result = self.lua.execute(wrapped_query)                        
+            result = lua.execute(wrapped_query)         
+
             return self._format_result(result, return_format)
 
     def _format_result(self, result, format):

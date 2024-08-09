@@ -53,8 +53,8 @@ class VDBPlugin(PluginBase):
     def search(self, vector, k):
         if self.index is None:
             return json.dumps({"status": "error", "message": "Index not created. Call vdb_create_index first."})
-        matches: Matches = self.index.search(np.array(vector, dtype=np.float32), k)
-        return json.dumps([{"key": match.key, "distance": float(match.distance)} for match in matches])
+        matches = self.index.search(np.array(vector, dtype=np.float32), k).to_list()
+        return json.dumps([{"key": match[0], "distance": match[1]} for match in matches])
 
     def remove(self, key):
         if self.index is None:
