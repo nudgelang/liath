@@ -8,10 +8,10 @@ import threading
 
 class MonitoringLoggingPlugin(PluginBase):
     def initialize(self, context):
-        self.log_file = 'whitematter.log'
+        self.log_file = 'liath.log'
         logging.basicConfig(filename=self.log_file, level=logging.INFO,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger('WhiteMatter')
+        self.logger = logging.getLogger('Liath')
         
         self.start_time = time.time()
         self.query_count = 0

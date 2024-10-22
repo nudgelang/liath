@@ -1,6 +1,6 @@
-# WhiteMatter
+# Liath
 
-WhiteMatter is an advanced, extensible database system built on top of RocksDB or LevelDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
+Liath is an advanced, extensible database system built on top of RocksDB or LevelDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
 
 ## Features
 
@@ -24,8 +24,8 @@ WhiteMatter is an advanced, extensible database system built on top of RocksDB o
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/whitematter.git
-   cd whitematter
+   git clone https://github.com/terraprompt/liath.git
+   cd liath
    ```
 
 2. Install the required Python dependencies:
@@ -105,7 +105,7 @@ python server.py --storage leveldb --host 0.0.0.0 --port 5000
 
 ## Using LuaRocks Packages in Queries
 
-WhiteMatter now supports the use of LuaRocks packages in your Lua queries. Here's how you can use them:
+Liath now supports the use of LuaRocks packages in your Lua queries. Here's how you can use them:
 
 1. Install a LuaRocks package for a specific namespace:
    ```
@@ -139,16 +139,16 @@ Note: The `db:require()` function will first look for packages in the namespace-
 
 ## Pluggable Storage System
 
-WhiteMatter supports both RocksDB and LevelDB as storage backends. The choice of backend can affect performance and available features:
+Liath supports both RocksDB and LevelDB as storage backends. The choice of backend can affect performance and available features:
 
 - **RocksDB**: Generally offers better performance for larger datasets and supports more advanced features like column families and transactions.
 - **LevelDB**: Simpler and may be easier to deploy in some environments. Does not support column families or transactions.
 
 Choose the storage engine that best fits your use case and deployment environment.
 
-## Extending WhiteMatter
+## Extending Liath
 
-WhiteMatter's plugin architecture allows for easy extension of functionality. To create a new plugin:
+Liath's plugin architecture allows for easy extension of functionality. To create a new plugin:
 
 1. Create a new Python file in the `plugins` directory.
 2. Define a class that inherits from `PluginBase`.

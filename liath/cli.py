@@ -5,8 +5,8 @@ import yaml
 import argparse
 
 class DatabaseCLI(cmd.Cmd):
-    intro = "Welcome to the WhiteMatter Database CLI. Type help or ? to list commands.\n"
-    prompt = "(whitematter) "
+    intro = "Welcome to the Liath Database CLI. Type help or ? to list commands.\n"
+    prompt = "(liath) "
 
     def __init__(self, storage_type='auto'):
         super().__init__()
@@ -88,7 +88,7 @@ class DatabaseCLI(cmd.Cmd):
         return True
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="WhiteMatter Database CLI")
+    parser = argparse.ArgumentParser(description="Liath Database CLI")
     parser.add_argument('--storage', choices=['auto', 'rocksdb', 'leveldb'], default='auto',
                         help="Specify the storage backend to use")
     args = parser.parse_args()

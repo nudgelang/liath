@@ -1,3 +1,0 @@
-#!/bin/sh
-
-LUAROCKS_SYSCONFDIR='/opt/homebrew/etc/luarocks' exec '/opt/homebrew/opt/lua/bin/lua5.4' -e 'package.path="/Users/dipankarsarkar/Projects/whitematterpy/whitematterpy/luarocks/share/lua/5.4/?.lua;/Users/dipankarsarkar/Projects/whitematterpy/whitematterpy/luarocks/share/lua/5.4/?/init.lua;"..package.path;package.cpath="/Users/dipankarsarkar/Projects/whitematterpy/whitematterpy/luarocks/lib/lua/5.4/?.so;"..package.cpath;local k,l,_=pcall(require,"luarocks.loader") _=k and l.add_context("lua-cjson","2.1.0.10-1")' '/Users/dipankarsarkar/Projects/whitematterpy/whitematterpy/luarocks/lib/luarocks/rocks-5.4/lua-cjson/2.1.0.10-1/bin/lua2json' "$@"

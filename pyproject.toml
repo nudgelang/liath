@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "whitematterpy"
+name = "liath"
 version = "0.1.0"
 description = ""
 authors = ["Dipankar Sarkar <me@dipankar.name>"]
@@ -18,8 +18,8 @@ flask-smorest = "^0.44.0"
 
 
 [tool.poetry.scripts]
-server = 'whitematterpy.server:run_server'
-cli = 'whitematterpy.cli:main'
+server = 'liath.server:run_server'
+cli = 'liath.cli:main'
 
 [build-system]
 requires = ["poetry-core"]

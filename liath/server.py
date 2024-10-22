@@ -68,7 +68,7 @@ def run_server(host='0.0.0.0', port=5000):
     app.run(host=host, port=port, threaded=True)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="WhiteMatter Database Server")
+    parser = argparse.ArgumentParser(description="Liath Database Server")
     parser.add_argument('--storage', choices=['auto', 'rocksdb', 'leveldb'], default='auto',
                         help="Specify the storage backend to use")
     parser.add_argument('--host', default='0.0.0.0', help="Specify the host to run the server on")

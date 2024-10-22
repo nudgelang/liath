@@ -5,7 +5,7 @@ from storage.rocksdb_storage import RocksDBStorage
 from storage.leveldb_storage import LevelDBStorage
 import os
 
-class TestWhiteMatterDatabase(unittest.TestCase):
+class TestLiathDatabase(unittest.TestCase):
     def setUp(self):
         if not os.path.exists('./test_data'):
             os.makedirs('./test_data')
