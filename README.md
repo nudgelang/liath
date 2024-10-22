@@ -1,4 +1,4 @@
-# Liath
+# Liath : Get you AI on right now!
 
 Liath is an advanced, extensible database system built on top of RocksDB or LevelDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
 
@@ -22,65 +22,52 @@ Liath is an advanced, extensible database system built on top of RocksDB or Leve
 
 ## Installation
 
-1. Clone the repository:
+1. Ensure you have Python 3.11 or higher installed.
+
+2. Install Poetry (if not already installed):
+   ```
+   pip install poetry
+   ```
+
+3. Clone the repository:
    ```
    git clone https://github.com/terraprompt/liath.git
    cd liath
    ```
 
-2. Install the required Python dependencies:
+4. Install the project dependencies using Poetry:
    ```
-   pip install flask pyyaml
-   ```
-
-3. Install the storage backend of your choice:
-
-   For RocksDB:
-   ```
-   pip install rocksdb
+   poetry install
    ```
 
-   For LevelDB:
-   ```
-   pip install plyvel
-   ```
-
-   For both (recommended):
-   ```
-   pip install rocksdb plyvel
-   ```
-
-4. Set up the directory structure:
+5. Set up the directory structure:
    ```
    mkdir -p data/default/files
    mkdir -p data/default/luarocks
    mkdir plugins
    ```
 
+6. Install required LuaRocks packages:
+   ```
+   ./liath/setup_luarocks.sh
+   ```
+
 ## Usage
 
 ### CLI Interface
 
-Start the CLI with your preferred storage backend:
+Start the CLI using Poetry:
 
 ```
-python cli.py --storage auto  # Tries RocksDB first, falls back to LevelDB
-# or
-python cli.py --storage rocksdb  # Explicitly use RocksDB
-# or
-python cli.py --storage leveldb  # Explicitly use LevelDB
+poetry run cli --storage auto
 ```
 
 ### Server Interface
 
-Start the server with your preferred storage backend:
+Start the server using Poetry:
 
 ```
-python server.py --storage auto --host 0.0.0.0 --port 5000
-# or
-python server.py --storage rocksdb --host 0.0.0.0 --port 5000
-# or
-python server.py --storage leveldb --host 0.0.0.0 --port 5000
+poetry run server --storage auto --host 0.0.0.0 --port 5000
 ```
 
 ### Basic Operations
