@@ -5,6 +5,8 @@ __pycache__/
 
 liath/data/
 
+.DS_Store
+
 # C extensions
 *.so
 *.gguf

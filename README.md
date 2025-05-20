@@ -1,152 +1,134 @@
-# Liath : Get you AI on right now!
+# 🚀 Liath: Your AI-Powered Database System
 
-Liath is an advanced, extensible database system built on top of RocksDB or LevelDB with Lua as its query language. It combines the power of key-value storage, vector search, LLM capabilities, and file operations into a flexible and modular architecture.
+> Liath is a next-generation database system that combines the power of key-value storage, vector search, and AI capabilities into one flexible platform. Built on RocksDB/LevelDB with Lua as its query language, it's designed for developers who want to build AI-powered applications quickly and efficiently.
 
-## Features
+## ✨ Key Features
 
-- **Pluggable Storage Backend**: Choose between RocksDB and LevelDB
-- **Lua Query Language**: Flexible and powerful querying capabilities
-- **Plugin Architecture**: Easily extensible with custom plugins
-- **Vector Database**: Built-in vector search capabilities
-- **LLM Integration**: Direct access to language models for text generation and completion
-- **Embedding Generation**: Create embeddings for text data
-- **File Operations**: Built-in file storage and retrieval
-- **Namespaces**: Isolate data and operations in separate namespaces
-- **Transaction Support**: ACID compliant transactions (RocksDB only)
-- **User Authentication**: Basic user management and authentication
-- **CLI and Server Interfaces**: Interact via command line or HTTP API
-- **Backup and Restore**: Create and manage backups of your data
-- **Query Caching**: Improve performance for frequently executed queries
-- **Monitoring and Logging**: Track system performance and log important events
-- **Connection Pooling**: Efficiently handle high concurrency in the server
+Liath comes packed with powerful features to help you build AI-powered applications. Here's a quick overview:
 
-## Installation
+- 🔌 **Pluggable Storage**: Choose between RocksDB and LevelDB
+- 📝 **Lua Query Language**: Write powerful queries with familiar syntax
+- 🧩 **Plugin Architecture**: Extend functionality with custom plugins
+- 🔍 **Vector Search**: Built-in vector database capabilities
+- 🤖 **AI Integration**: Direct access to language models
+- 📊 **Embedding Generation**: Create and manage text embeddings
+- 📁 **File Operations**: Built-in file storage and retrieval
+- 🏷️ **Namespaces**: Isolate data and operations
+- 💾 **Transaction Support**: ACID compliant (RocksDB)
+- 🔐 **User Authentication**: Secure user management
+- 🌐 **CLI & HTTP API**: Multiple ways to interact
+- 💾 **Backup & Restore**: Keep your data safe
+- ⚡ **Query Caching**: Optimize performance
+- 📈 **Monitoring**: Track system performance
+- 🔄 **Connection Pooling**: Handle high concurrency
 
-1. Ensure you have Python 3.11 or higher installed.
+> 📚 For detailed information about each feature, check out our [Features Documentation](FEATURES.md)
 
-2. Install Poetry (if not already installed):
-   ```
+## 🛠️ Installation
+
+1. **Prerequisites**
+   - Python 3.11 or higher
+   - Poetry package manager
+
+2. **Install Poetry**
+   ```bash
    pip install poetry
    ```
 
-3. Clone the repository:
-   ```
-   git clone https://github.com/terraprompt/liath.git
+3. **Clone & Setup**
+   ```bash
+   git clone https://github.com/nudgelang/liath.git
    cd liath
-   ```
-
-4. Install the project dependencies using Poetry:
-   ```
    poetry install
    ```
 
-5. Set up the directory structure:
-   ```
-   mkdir -p data/default/files
-   mkdir -p data/default/luarocks
-   mkdir plugins
+4. **Create Directory Structure**
+   ```bash
+   mkdir -p data/default/{files,luarocks} plugins
    ```
 
-6. Install required LuaRocks packages:
-   ```
+5. **Install Lua Dependencies**
+   ```bash
    ./liath/setup_luarocks.sh
    ```
 
-## Usage
+## 🚀 Quick Start
 
-### CLI Interface
-
-Start the CLI using Poetry:
-
-```
+### CLI Mode
+```bash
 poetry run cli --storage auto
 ```
 
-### Server Interface
-
-Start the server using Poetry:
-
-```
+### Server Mode
+```bash
 poetry run server --storage auto --host 0.0.0.0 --port 5000
 ```
 
 ### Basic Operations
 
-1. Create a user and log in:
-   ```
-   create_user username password
-   login username password
+```lua
+-- Create user and login
+create_user username password
+login username password
+
+-- Create and use namespace
+create_namespace my_namespace
+use my_namespace
+
+-- Basic queries
+query return db:put("key", "value")
+query return db:get("key")
+```
+
+## 📦 Using LuaRocks Packages
+
+Liath supports LuaRocks packages in your queries. Here's how:
+
+1. **Install a Package**
+   ```bash
+   luarocks install --tree=./data/namespaces/your_namespace package_name
    ```
 
-2. Create a namespace:
-   ```
-   create_namespace my_namespace
-   use my_namespace
-   ```
-
-3. Execute Lua queries:
-   ```
-   query return db:put("key", "value")
-   query return db:get("key")
-   ```
-
-## Using LuaRocks Packages in Queries
-
-Liath now supports the use of LuaRocks packages in your Lua queries. Here's how you can use them:
-
-1. Install a LuaRocks package for a specific namespace:
-   ```
-   luarocks install --tree=./data/namespaces/your_namespace_name package_name
-   ```
-
-2. In your Lua query, use the `db:require()` function to load the package:
+2. **Use in Queries**
    ```lua
    local json = db:require("cjson")
-   local encoded = json.encode({key = "value"})
-   return encoded
+   return json.encode({key = "value"})
    ```
 
-3. You can now use the functions provided by the package in your query.
+### Example: HTTP Requests with LuaSocket
 
-Note: The `db:require()` function will first look for packages in the namespace-specific directory, and then in the global LuaRocks directory.
+```lua
+local http = db:require("socket.http")
+local body, code = http.request("http://example.com")
+return {body = body, status_code = code}
+```
 
-### Example: Using the `luasocket` package
+## 🔄 Storage Options
 
-1. Install `luasocket` for a namespace:
-   ```
-   luarocks install --tree=./data/namespaces/my_namespace luasocket
-   ```
+Choose your storage backend based on your needs:
 
-2. Use it in a query:
-   ```lua
-   local http = db:require("socket.http")
-   local body, code = http.request("http://example.com")
-   return {body = body, status_code = code}
-   ```
+| Feature | RocksDB | LevelDB |
+|---------|---------|---------|
+| Performance | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Transactions | ✅ | ❌ |
+| Column Families | ✅ | ❌ |
+| Complexity | Medium | Low |
 
-## Pluggable Storage System
+## 🧩 Extending Liath
 
-Liath supports both RocksDB and LevelDB as storage backends. The choice of backend can affect performance and available features:
+Create custom plugins by:
+1. Adding a new Python file in `plugins/`
+2. Inheriting from `PluginBase`
+3. Implementing required methods
 
-- **RocksDB**: Generally offers better performance for larger datasets and supports more advanced features like column families and transactions.
-- **LevelDB**: Simpler and may be easier to deploy in some environments. Does not support column families or transactions.
+## 🤝 Contributing
 
-Choose the storage engine that best fits your use case and deployment environment.
+We welcome contributions! Feel free to:
+- Submit pull requests
+- Report bugs
+- Suggest features
+- Improve documentation
 
-## Extending Liath
+## 📄 License
 
-Liath's plugin architecture allows for easy extension of functionality. To create a new plugin:
-
-1. Create a new Python file in the `plugins` directory.
-2. Define a class that inherits from `PluginBase`.
-3. Implement the required methods: `initialize`, `get_lua_interface`, and `name`.
-
-For more detailed information on creating plugins, refer to the developer documentation.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE) for details.
